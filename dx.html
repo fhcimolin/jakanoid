@@ -93,13 +93,25 @@
                 var hasBallReachedPaddleFromRight = ballX < (paddleX + paddleWidth - (paddleWidth / 2));
                 
                 if(hasBallReachedPaddleVertically && (hasBallReachedPaddleFromLeft && hasBallReachedPaddleFromRight)){
-                    var angleRatio = (ballX - (paddleX - (paddleWidth / 2))) / paddleWidth; //porcentagem de onde bola tocou no paddle
+                    var angleRatio = (ballX - (paddleX - (paddleWidth / 2))) / paddleWidth;
 
                     ballAngle = 165 - (140 * angleRatio);
                 }
             }
 
+            function loseLife(){
+                if(isGameRunning()){
+                    gameState = GAME_AWAIT;
+                    ballY = canvas.height + 10;
+                    lives--;
+                }
+            }
+
             function checkIfBallOutOfBounds(){
+                if(ballY > canvas.height){
+                    loseLife();
+                    return;
+                }
                 if(ballOutOfXBounds()){
                     ballAngle = 180 - ballAngle;
                 }
@@ -164,6 +176,45 @@
                 context.fillRect(paddleX - (paddleWidth / 2), paddleY, paddleWidth, 10);
             }
 
+            function drawLives(){
+                context.fillStyle = "rgba(100,100,100,1)";
+                context.font = "bold 16px Arial";
+                context.fillText(lives, canvas.width - 50, 50);
+            }
+
+            var GAME_STAND_BY = 0;
+            var GAME_RUNNING = 1;
+            var GAME_AWAIT = 2;
+            var GAME_OVER = 3;
+
+            var WAITING_TIME_LOST_LIFE = 2000;
+            var MAX_LIVES = 3;
+
+            var gameState = GAME_STAND_BY;
+            var lives = MAX_LIVES;
+
+            function isGameOnStandBy(){
+                return gameState == GAME_STAND_BY;
+            }
+
+            function isGameRunning(){
+                return gameState == GAME_RUNNING;
+            }
+
+            function isGameOnAwait(){
+                return gameState == GAME_AWAIT;
+            }
+
+            function isGameOver(){
+                return gameState == GAME_OVER;
+            }
+
+            function placeBallAbovePaddle(){
+                ballX = paddleX - (paddleWidth / 2);
+                ballY = paddleY - 20;
+                ballAngle = 80;
+            }
+
             function mainLoop()
             {
                 clearScreen();
@@ -171,8 +222,29 @@
                 drawBricks();
                 drawBall();
                 drawPaddle();
+                drawLives();
                 
-                moveBall();
+                if(isGameOnStandBy()){
+                    placeBallAbovePaddle();
+                }
+
+                if(isGameRunning()){
+                    moveBall();
+                }
+
+                if(isGameOnAwait()){
+                    setTimeout(function(){
+                        gameState = GAME_STAND_BY;
+                    }, WAITING_TIME_LOST_LIFE);
+                }
+
+                if(lives < 1){
+                    gameState = GAME_OVER;
+                }
+
+                if(isGameOver()){
+
+                }
             }
 
             window.onload = function(){
@@ -182,6 +254,28 @@
             canvas.onmousemove = function(event){
                 paddleX = event.x;
             }
+
+            canvas.onmousedown = function(event){
+                if(isGameOnStandBy()){
+                    gameState = GAME_RUNNING;
+                }
+
+                if(isGameOver()){
+                    gameState = GAME_STAND_BY;
+                }
+            }
+
+            canvas.ontouchstart = function(event) {
+                event.preventDefault();
+                return false;
+            }
+
+            canvas.ontouchmove = function(event) {
+                event.preventDefault();
+                if (event.touches) event = event.touches[0];
+                paddleX = event.x;
+            }
+
         </script>
     </body>
 </html>
