@@ -13,10 +13,13 @@
             var ballY = canvas.height / 2;
 
             var ballAngle = 75;
-            var ballSpeed = 2;
+            var ballSpeed = 1;
 
             var brickWidth = 32;
             var brickHeight = 16;
+
+            var paddleY = canvas.height - 60;
+            var paddleWidth = 80;
 
             var brickArray = [
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -79,8 +82,19 @@
             function checkBallColision(){
                 checkIfBallOutOfBounds();
                 checkIfBallInsideBrick();
+                checkIfBallInsidePaddle();
             }
             
+            function checkIfBallInsidePaddle(){
+                var hasBallReachedPaddleVertically = ballY > paddleY;
+                var hasBallReachedPaddleFromLeft = ballX > (paddleX - (paddleWidth / 2));
+                var hasBallReachedPaddleFromRight = ballX < (paddleX + paddleWidth - (paddleWidth / 2));
+                
+                if(hasBallReachedPaddleVertically && (hasBallReachedPaddleFromLeft && hasBallReachedPaddleFromRight)){
+                    ballAngle = (360 - ballAngle) % 360;
+                }
+            }
+
             function checkIfBallOutOfBounds(){
                 if(ballOutOfXBounds()){
                     ballAngle = 180 - ballAngle;
@@ -141,22 +155,28 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
             }
 
+            function drawPaddle(){
+                context.fillStyle = "rgba(100,100,100,1)";
+                context.fillRect(paddleX - (paddleWidth / 2), paddleY, paddleWidth, 10);
+            }
+
             function mainLoop()
             {
                 clearScreen();
                 
                 drawBricks();
                 drawBall();
+                drawPaddle();
                 
                 moveBall();
             }
 
             window.onload = function(){
-                setInterval(mainLoop, 2);
+                setInterval(mainLoop, 1);
             }
 
-            canvas.onmousedown = function(event){
-                
+            canvas.onmousemove = function(event){
+                paddleX = event.x;
             }
         </script>
     </body>
