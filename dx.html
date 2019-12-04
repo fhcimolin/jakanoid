@@ -1,0 +1,163 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <canvas id="myCanvas" width="576" height="500" style="border: solid black 1px">
+        </canvas>
+
+        <script>
+            var canvas = document.getElementById("myCanvas");
+            var context = canvas.getContext("2d");
+
+            var ballX = canvas.width / 2;
+            var ballY = canvas.height / 2;
+
+            var ballAngle = 75;
+            var ballSpeed = 2;
+
+            var brickWidth = 32;
+            var brickHeight = 16;
+
+            var brickArray = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]
+            ];
+
+            function drawBricks(){
+                var bricks = brickArray;
+
+                for(var i = 0; i < bricks.length; i++) {
+                    var brick = bricks[i];
+                    for(var j = 0; j < brick.length; j++) {
+                        if(bricks[i][j] > 0){
+                            drawBrick(j*brickWidth,i*brickHeight);
+                        }
+                    }
+                }
+            }
+
+            function drawBrick(x,y){
+                context.fillStyle = "rgba(100,100,100,1)";
+                context.fillRect(x,y,brickWidth,brickHeight);
+                context.strokeStyle = "rgba(255,255,255,1)";
+                context.strokeRect(x,y,brickWidth,brickHeight);
+            }
+
+            function drawBall(){
+                context.strokeStyle = "rgba(0,0,0,1)";
+                context.beginPath();
+                context.arc(ballX, ballY, 3, 0, 2 * Math.PI);
+                context.stroke();
+            }
+
+            function toRadians (angle) {
+                return angle * (Math.PI / 180);
+            }
+
+            function driftBall(){
+                var angle = toRadians(ballAngle);
+                
+                ballX += ballSpeed * Math.cos(angle);
+                ballY += ballSpeed * -Math.sin(angle);
+            }
+
+            function ballOutOfXBounds(){
+                return ballX > canvas.width || 
+                       ballX < 0;
+            }
+
+            function ballOutOfYBounds(){
+                return ballY > canvas.height ||
+                       ballY < 0;
+            }
+
+            function checkBallColision(){
+                checkIfBallOutOfBounds();
+                checkIfBallInsideBrick();
+            }
+            
+            function checkIfBallOutOfBounds(){
+                if(ballOutOfXBounds()){
+                    ballAngle = 180 - ballAngle;
+                }
+                if(ballOutOfYBounds()){
+                    ballAngle = 360 - ballAngle;
+                }
+    
+                ballAngle %= 360;
+            }
+
+            function checkBallColisionAngleWithBrick(x,y){
+                var collisionThreshold = 2;
+                
+                var ballHitBrickOnY = ballY > (y * brickHeight) + brickHeight - collisionThreshold ||
+                                      ballY < (y * brickHeight) + collisionThreshold;
+                var ballHitBrickOnX = ballX > (x * brickWidth) + brickWidth - collisionThreshold ||
+                                      ballX < (x * brickWidth) + collisionThreshold;
+                
+                if(ballHitBrickOnX){
+                    ballAngle = 180 - ballAngle;
+                }
+                
+                if(ballHitBrickOnY){
+                    ballAngle = 360 - ballAngle;
+                }
+
+                ballAngle %= 360;
+            }
+
+            function checkIfBallInsideBrick(){
+                var ballQuadrantX = (ballX - (ballX % brickWidth)) / brickWidth;
+                var ballQuadrantY = (ballY - (ballY % brickHeight)) / brickHeight;
+
+                if(ballQuadrantY >= brickArray.length){
+                    return;
+                }
+
+                if(ballQuadrantX >= brickArray[0].length){
+                    return;
+                }
+
+                if(brickArray[ballQuadrantY][ballQuadrantX] > 0){
+                    brickArray[ballQuadrantY][ballQuadrantX] = 0;
+
+                    checkBallColisionAngleWithBrick(
+                        ballQuadrantX, 
+                        ballQuadrantY);
+                }
+            }
+
+            function moveBall(){
+                driftBall();
+                checkBallColision();
+            }
+
+            function clearScreen(){
+                context.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            function mainLoop()
+            {
+                clearScreen();
+                
+                drawBricks();
+                drawBall();
+                
+                moveBall();
+            }
+
+            window.onload = function(){
+                setInterval(mainLoop, 2);
+            }
+
+            canvas.onmousedown = function(event){
+                
+            }
+        </script>
+    </body>
+</html>
