@@ -93,7 +93,7 @@
                 var hasBallReachedPaddleFromRight = ballX < (paddleX + paddleWidth - (paddleWidth / 2));
                 
                 if(hasBallReachedPaddleVertically && (hasBallReachedPaddleFromLeft && hasBallReachedPaddleFromRight)){
-                    var angleRatio = (ballX) - (paddleX - (paddleWidth / 2)) / paddleWidth; //porcentagem de onde bola tocou no paddle
+                    var angleRatio = (ballX - (paddleX - (paddleWidth / 2))) / paddleWidth; //porcentagem de onde bola tocou no paddle
 
                     ballAngle = 165 - (140 * angleRatio);
                 }
