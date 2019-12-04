@@ -17,11 +17,13 @@
 
             var brickWidth = 32;
             var brickHeight = 16;
-
-            var paddleY = canvas.height - 60;
+            
             var paddleWidth = 80;
+            var paddleX = (canvas.width / 2) - (paddleWidth / 2);
+            var paddleY = canvas.height - 60;
 
             var brickArray = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                 [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
                 [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
@@ -86,12 +88,14 @@
             }
             
             function checkIfBallInsidePaddle(){
-                var hasBallReachedPaddleVertically = ballY > paddleY;
+                var hasBallReachedPaddleVertically = ballY > paddleY && ballY < paddleY + 10;
                 var hasBallReachedPaddleFromLeft = ballX > (paddleX - (paddleWidth / 2));
                 var hasBallReachedPaddleFromRight = ballX < (paddleX + paddleWidth - (paddleWidth / 2));
                 
                 if(hasBallReachedPaddleVertically && (hasBallReachedPaddleFromLeft && hasBallReachedPaddleFromRight)){
-                    ballAngle = (360 - ballAngle) % 360;
+                    var angleRatio = (ballX) - (paddleX - (paddleWidth / 2)) / paddleWidth; //porcentagem de onde bola tocou no paddle
+
+                    ballAngle = 165 - (140 * angleRatio);
                 }
             }
 
