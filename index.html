@@ -1,11 +1,26 @@
 <html>
     <head>
+        <meta name="viewport" content="width=device-width,height=device-height initial-scale=1">
     </head>
     <body>
         <canvas id="myCanvas" width="576" height="500" style="border: solid black 1px">
         </canvas>
 
         <script>
+            var WAITING_TIME_LOST_LIFE = 2000;
+            var POINTS_PER_BRICK = 10;
+            var MAX_LIVES = 3;
+            
+            var GAME_STAND_BY = 0;
+            var GAME_RUNNING = 1;
+            var GAME_AWAIT = 2;
+            var GAME_OVER = 3;
+            var GAME_WIN = 4;
+
+            var gameState = GAME_STAND_BY;
+            var lives = MAX_LIVES;
+            var score = 0;
+
             var canvas = document.getElementById("myCanvas");
             var context = canvas.getContext("2d");
 
@@ -13,12 +28,12 @@
             var ballY = canvas.height / 2;
 
             var ballAngle = 75;
-            var ballSpeed = 1;
+            var ballSpeed = 1.5;
 
             var brickWidth = 32;
             var brickHeight = 16;
             
-            var paddleWidth = 80;
+            var paddleWidth = 70;
             var paddleX = (canvas.width / 2) - (paddleWidth / 2);
             var paddleY = canvas.height - 60;
 
@@ -46,6 +61,25 @@
                 }
             }
 
+            function areAllBricksWiped(){
+                var bricks = brickArray;
+
+                var sum = 0;
+
+                for(var i = 0; i < bricks.length; i++) {
+                    var brick = bricks[i];
+                    for(var j = 0; j < brick.length; j++) {
+                        if(bricks[i][j] > 0){
+                            sum++;
+                        }
+                    }
+                }
+
+                if(sum == 0){
+                    gameState = GAME_WIN;
+                }
+            }
+
             function drawBrick(x,y){
                 context.fillStyle = "rgba(100,100,100,1)";
                 context.fillRect(x,y,brickWidth,brickHeight);
@@ -69,6 +103,13 @@
                 
                 ballX += ballSpeed * Math.cos(angle);
                 ballY += ballSpeed * -Math.sin(angle);
+            }
+
+            function driftBallBackwards(){
+                var angle = toRadians(ballAngle);
+                
+                ballX -= ballSpeed * Math.cos(angle);
+                ballY -= ballSpeed * -Math.sin(angle);
             }
 
             function ballOutOfXBounds(){
@@ -101,9 +142,15 @@
 
             function loseLife(){
                 if(isGameRunning()){
-                    gameState = GAME_AWAIT;
-                    ballY = canvas.height + 10;
+                    ballY = canvas.height + 10; //hide ball from view
                     lives--;
+
+                    if(lives > 0){
+                        gameState = GAME_AWAIT;
+                    }
+                    else{
+                        gameState = GAME_OVER;
+                    }
                 }
             }
 
@@ -123,13 +170,15 @@
             }
 
             function checkBallColisionAngleWithBrick(x,y){
-                var collisionThreshold = 2;
+                var collisionThreshold = 1;
                 
                 var ballHitBrickOnY = ballY > (y * brickHeight) + brickHeight - collisionThreshold ||
                                       ballY < (y * brickHeight) + collisionThreshold;
                 var ballHitBrickOnX = ballX > (x * brickWidth) + brickWidth - collisionThreshold ||
                                       ballX < (x * brickWidth) + collisionThreshold;
-                
+
+                driftBallBackwards();
+
                 if(ballHitBrickOnX){
                     ballAngle = 180 - ballAngle;
                 }
@@ -156,6 +205,8 @@
                 if(brickArray[ballQuadrantY][ballQuadrantX] > 0){
                     brickArray[ballQuadrantY][ballQuadrantX] = 0;
 
+                    score += POINTS_PER_BRICK;
+
                     checkBallColisionAngleWithBrick(
                         ballQuadrantX, 
                         ballQuadrantY);
@@ -177,21 +228,31 @@
             }
 
             function drawLives(){
+                var livesText = "";
+                
+                for(var i = 0; i < lives; i++){
+                    livesText += String.fromCharCode(10134); //heavy minus sign (paddle)
+                }
+                
                 context.fillStyle = "rgba(100,100,100,1)";
+                context.textAlign = "right";
                 context.font = "bold 16px Arial";
-                context.fillText(lives, canvas.width - 50, 50);
+                context.fillText(livesText, canvas.width - 20, 20);
             }
 
-            var GAME_STAND_BY = 0;
-            var GAME_RUNNING = 1;
-            var GAME_AWAIT = 2;
-            var GAME_OVER = 3;
+            function drawScore(){
+                context.fillStyle = "rgba(100,100,100,1)";
+                context.textAlign = "left";
+                context.font = "bold 16px Arial";
+                context.fillText(score, 20, 20);
+            }
 
-            var WAITING_TIME_LOST_LIFE = 2000;
-            var MAX_LIVES = 3;
-
-            var gameState = GAME_STAND_BY;
-            var lives = MAX_LIVES;
+            function drawMessage(message){
+                context.fillStyle = "rgba(100,100,100,1)";
+                context.textAlign = "left";
+                context.font = "bold 20px Arial";
+                context.fillText(message, canvas.width / 2 - 30, canvas.height / 2);
+            }
 
             function isGameOnStandBy(){
                 return gameState == GAME_STAND_BY;
@@ -209,8 +270,12 @@
                 return gameState == GAME_OVER;
             }
 
+            function isGameWin(){
+                return gameState == GAME_WIN;
+            }
+
             function placeBallAbovePaddle(){
-                ballX = paddleX - (paddleWidth / 2);
+                ballX = paddleX;
                 ballY = paddleY - 20;
                 ballAngle = 80;
             }
@@ -223,6 +288,7 @@
                 drawBall();
                 drawPaddle();
                 drawLives();
+                drawScore();
                 
                 if(isGameOnStandBy()){
                     placeBallAbovePaddle();
@@ -238,12 +304,13 @@
                     }, WAITING_TIME_LOST_LIFE);
                 }
 
-                if(lives < 1){
-                    gameState = GAME_OVER;
+                if(isGameOver()){
+                    drawMessage("GAME OVER");
                 }
 
-                if(isGameOver()){
-
+                if(isGameWin()){
+                    drawGameWin("GREAT JOB!");
+                    ballX = canvas.width + 10; //hide ball from view again
                 }
             }
 
@@ -251,29 +318,38 @@
                 setInterval(mainLoop, 1);
             }
 
-            canvas.onmousemove = function(event){
-                paddleX = event.x;
-            }
-
-            canvas.onmousedown = function(event){
+            function handleGameFlow(){
                 if(isGameOnStandBy()){
                     gameState = GAME_RUNNING;
                 }
 
                 if(isGameOver()){
+                    score = 0;
+                    lives = MAX_LIVES;
                     gameState = GAME_STAND_BY;
                 }
             }
 
+            canvas.onmousemove = function(event){
+                paddleX = event.x;
+            }
+
+            canvas.onmousedown = function(event){
+                handleGameFlow();
+            }
+
             canvas.ontouchstart = function(event) {
+                handleGameFlow();
+
                 event.preventDefault();
-                return false;
             }
 
             canvas.ontouchmove = function(event) {
+                var touch = event.targetTouches[0];
+                
+                paddleX = touch.pageX;
+                
                 event.preventDefault();
-                if (event.touches) event = event.touches[0];
-                paddleX = event.x;
             }
 
         </script>
