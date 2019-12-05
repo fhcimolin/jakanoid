@@ -1,6 +1,7 @@
 <html>
     <head>
-        <meta name="viewport" content="width=device-width,height=device-height initial-scale=1">
+        <meta name="viewport" content="width=586,height=device-height initial-scale=1">
+        <title>Jakanoid</title>
     </head>
     <body>
         <canvas id="myCanvas" width="576" height="500" style="border: solid black 1px">
@@ -11,13 +12,14 @@
             var POINTS_PER_BRICK = 10;
             var MAX_LIVES = 3;
             
-            var GAME_STAND_BY = 0;
-            var GAME_RUNNING = 1;
-            var GAME_AWAIT = 2;
-            var GAME_OVER = 3;
-            var GAME_WIN = 4;
+            var GAME_TITLE_SCREEN = 0;
+            var GAME_STAND_BY = 1;
+            var GAME_RUNNING = 2;
+            var GAME_AWAIT = 3;
+            var GAME_OVER = 4;
+            var GAME_WIN = 5;
 
-            var gameState = GAME_STAND_BY;
+            var gameState = GAME_TITLE_SCREEN;
             var lives = MAX_LIVES;
             var score = 0;
 
@@ -48,7 +50,7 @@
                 [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]
             ];
 
-            var brickArray = BRICK_MODEL.slice();
+            var brickArray;
 
             function drawBricks(){
                 var bricks = brickArray;
@@ -80,8 +82,12 @@
                 return sum == 0;
             }
 
-            function resetAllBricks(){
-                brickArray = BRICK_MODEL;
+            function resetAllBricks(callback){
+                brickArray = BRICK_MODEL.map(arr => arr.slice());
+
+                if(callback){
+                    callback();
+                }
             }
 
             function drawBrick(x,y){
@@ -144,13 +150,21 @@
                 }
             }
 
+            function waitAndResetBall(){
+                gameState = GAME_AWAIT;
+                
+                setTimeout(function(){
+                    gameState = GAME_STAND_BY;
+                }, WAITING_TIME_LOST_LIFE);
+            }
+
             function loseLife(){
                 if(isGameRunning()){
                     ballY = canvas.height + 10; //hide ball from view
                     lives--;
 
                     if(lives > 0){
-                        gameState = GAME_AWAIT;
+                        waitAndResetBall();
                     }
                     else{
                         gameState = GAME_OVER;
@@ -253,9 +267,20 @@
 
             function drawMessage(message){
                 context.fillStyle = "rgba(100,100,100,1)";
-                context.textAlign = "left";
+                context.textAlign = "center";
                 context.font = "bold 20px Arial";
-                context.fillText(message, canvas.width / 2 - 40, canvas.height / 2);
+                context.fillText(message, canvas.width / 2, canvas.height / 2);
+            }
+
+            function drawMessageAuthor(){
+                context.fillStyle = "rgba(180,180,180,1)";
+                context.textAlign = "center";
+                context.font = "bold 20px Arial";
+                context.fillText("by Flavio Cimolin", canvas.width / 2, (canvas.height / 2) + 24);
+            }
+
+            function isGameOnTitleScreen(){
+                return gameState == GAME_TITLE_SCREEN;
             }
 
             function isGameOnStandBy(){
@@ -294,18 +319,18 @@
                 drawLives();
                 drawScore();
                 
+                if(isGameOnTitleScreen()){
+                    placeBallAbovePaddle();
+                    drawMessage("JAKANOID");
+                    drawMessageAuthor();
+                }
+
                 if(isGameOnStandBy()){
                     placeBallAbovePaddle();
                 }
 
                 if(isGameRunning()){
                     moveBall();
-                }
-
-                if(isGameOnAwait()){
-                    setTimeout(function(){
-                        gameState = GAME_STAND_BY;
-                    }, WAITING_TIME_LOST_LIFE);
                 }
 
                 if(isGameOver()){
@@ -323,10 +348,18 @@
             }
 
             window.onload = function(){
+                resetAllBricks(triggerMainLoop);
+            }
+
+            function triggerMainLoop(){
                 setInterval(mainLoop, 1);
             }
 
             function handleGameFlow(){
+                if(isGameOnTitleScreen()){
+                    gameState = GAME_STAND_BY;
+                }
+                
                 if(isGameOnStandBy()){
                     gameState = GAME_RUNNING;
                 }
