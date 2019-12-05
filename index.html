@@ -263,14 +263,13 @@
                 driftBallBackwards();
 
                 if(ballHitBrickOnX){
-                    ballAngle = 180 - ballAngle;
+                    ballAngle = (180 - ballAngle) % 360;
+                    return;
                 }
                 
                 if(ballHitBrickOnY){
-                    ballAngle = 360 - ballAngle;
+                    ballAngle = (360 - ballAngle) % 360;
                 }
-
-                ballAngle %= 360;
             }
 
             function checkIfBallInsideBrick(){
