@@ -6,7 +6,7 @@
         <title>Jakanoid</title>
     </head>
     <body>
-        <canvas id="myCanvas" width="576" height="500" style="border: solid black 1px">
+        <canvas id="myCanvas" width="576" height="400" style="border: solid black 1px">
         </canvas>
 
         <script>
@@ -38,7 +38,7 @@
             var brickWidth = 32;
             var brickHeight = 16;
             
-            var paddleWidth = 70;
+            var paddleWidth = 80;
             var paddleX = canvas.width / 2;
             var paddleY = canvas.height - 60;
 
@@ -92,11 +92,7 @@
                 [0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0],
                 [0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0],
                 [0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0],
-                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0]
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0]
             ]
 
             var brickArray;
@@ -333,14 +329,14 @@
                 context.fillStyle = "rgba(100,100,100,1)";
                 context.textAlign = "center";
                 context.font = "bold 20px Arial";
-                context.fillText(message, canvas.width / 2, canvas.height / 2);
+                context.fillText(message, canvas.width / 2, (canvas.height / 2) + 70);
             }
 
             function drawMessageAuthor(){
                 context.fillStyle = "rgba(180,180,180,1)";
                 context.textAlign = "center";
                 context.font = "bold 20px Arial";
-                context.fillText("by Flavio Cimolin", canvas.width / 2, (canvas.height / 2) + 24);
+                context.fillText("by Flavio Cimolin", canvas.width / 2, (canvas.height / 2) + 94);
             }
 
             function isGameOnTitleScreen(){
