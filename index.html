@@ -11,6 +11,7 @@
             var WAITING_TIME_LOST_LIFE = 2000;
             var POINTS_PER_BRICK = 10;
             var MAX_LIVES = 3;
+            var MAX_LEVEL = 3;
             
             var GAME_TITLE_SCREEN = 0;
             var GAME_STAND_BY = 1;
@@ -36,8 +37,10 @@
             var brickHeight = 16;
             
             var paddleWidth = 70;
-            var paddleX = (canvas.width / 2) - (paddleWidth / 2);
+            var paddleX = canvas.width / 2;
             var paddleY = canvas.height - 60;
+
+            var LEVEL = 1;
 
             var BRICK_MODEL = [
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -50,7 +53,43 @@
                 [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]
             ];
 
+            var BRICK_MODEL_HOURGLASS = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
+                [0,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0],
+                [0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0],
+                [0,0,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0],
+                [0,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0],
+                [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0]
+            ];
+
+            var BRICK_MODEL_BOWTIE = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,1,0,0,0,1,1,1,1,0,0,0,1,0,0,0],
+                [0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,0,0,0],
+                [0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0],
+                [0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0],
+                [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
+                [0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0],
+                [0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0],
+                [0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0]
+            ]
+
             var brickArray;
+
+            function getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
 
             function drawBricks(){
                 var bricks = brickArray;
@@ -83,7 +122,21 @@
             }
 
             function resetAllBricks(callback){
-                brickArray = BRICK_MODEL.map(arr => arr.slice());
+                var level_model;
+
+                switch(LEVEL){
+                    case 1:
+                        level_model = BRICK_MODEL;
+                        break;
+                    case 2:
+                        level_model = BRICK_MODEL_HOURGLASS;
+                        break;
+                    case 3:
+                        level_model = BRICK_MODEL_BOWTIE;
+                        break;
+                }
+                
+                brickArray = level_model.map(arr => arr.slice());
 
                 if(callback){
                     callback();
@@ -338,7 +391,7 @@
                 }
 
                 if(isGameWin()){
-                    drawGameWin("YOU DID IT!");
+                    drawMessage("YOU DID IT!");
                     ballX = canvas.width + 10; //hide ball from view again
                 }
 
@@ -348,6 +401,8 @@
             }
 
             window.onload = function(){
+                LEVEL = getRandomInt(1,MAX_LEVEL);
+                
                 resetAllBricks(triggerMainLoop);
             }
 
