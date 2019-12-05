@@ -28,7 +28,7 @@
             var ballY = canvas.height / 2;
 
             var ballAngle = 75;
-            var ballSpeed = 1.5;
+            var ballSpeed = 1;
 
             var brickWidth = 32;
             var brickHeight = 16;
@@ -37,7 +37,7 @@
             var paddleX = (canvas.width / 2) - (paddleWidth / 2);
             var paddleY = canvas.height - 60;
 
-            var brickArray = [
+            var BRICK_MODEL = [
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                 [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
@@ -47,6 +47,8 @@
                 [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
                 [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0]
             ];
+
+            var brickArray = BRICK_MODEL.slice();
 
             function drawBricks(){
                 var bricks = brickArray;
@@ -75,9 +77,11 @@
                     }
                 }
 
-                if(sum == 0){
-                    gameState = GAME_WIN;
-                }
+                return sum == 0;
+            }
+
+            function resetAllBricks(){
+                brickArray = BRICK_MODEL;
             }
 
             function drawBrick(x,y){
@@ -251,7 +255,7 @@
                 context.fillStyle = "rgba(100,100,100,1)";
                 context.textAlign = "left";
                 context.font = "bold 20px Arial";
-                context.fillText(message, canvas.width / 2 - 30, canvas.height / 2);
+                context.fillText(message, canvas.width / 2 - 40, canvas.height / 2);
             }
 
             function isGameOnStandBy(){
@@ -309,8 +313,12 @@
                 }
 
                 if(isGameWin()){
-                    drawGameWin("GREAT JOB!");
+                    drawGameWin("YOU DID IT!");
                     ballX = canvas.width + 10; //hide ball from view again
+                }
+
+                if(areAllBricksWiped()){
+                    gameState = GAME_WIN;
                 }
             }
 
@@ -327,6 +335,8 @@
                     score = 0;
                     lives = MAX_LIVES;
                     gameState = GAME_STAND_BY;
+
+                    resetAllBricks();
                 }
             }
 
