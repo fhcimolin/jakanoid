@@ -45,6 +45,8 @@
             var BRICK_MODEL = [
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                 [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
                 [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
                 [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
@@ -215,21 +217,17 @@
                 }
             }
 
-            function waitAndResetBall(){
-                gameState = GAME_AWAIT;
-                
-                setTimeout(function(){
-                    gameState = GAME_STAND_BY;
-                }, WAITING_TIME_LOST_LIFE);
-            }
-
             function loseLife(){
                 if(isGameRunning()){
                     ballY = canvas.height + 10; //hide ball from view
                     lives--;
 
                     if(lives > 0){
-                        waitAndResetBall();
+                        gameState = GAME_AWAIT;
+                
+                        setTimeout(function(){
+                            gameState = GAME_STAND_BY;
+                        }, WAITING_TIME_LOST_LIFE);
                     }
                     else{
                         gameState = GAME_OVER;
