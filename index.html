@@ -150,7 +150,9 @@
                 return sum == 0;
             }
 
-            function resetAllBricks(callback){
+            var areBricksLoaded;
+
+            function resetAllBricks(){
                 var level_model;
 
                 switch(LEVEL){
@@ -169,10 +171,7 @@
                 }
                 
                 brickArray = level_model.map(arr => arr.slice());
-
-                if(callback){
-                    callback();
-                }
+                areBricksLoaded = true;
             }
 
             function toRadians (angle) {
@@ -512,15 +511,20 @@
             {
                 clearScreen();
                 
-                drawBricks();
+                if(areBricksLoaded){
+                    drawBricks();
+                }
+
                 drawPaddle();
-                drawLives();
-                drawScore();
                 
                 if(isGameOnTitleScreen()){
                     placeBallAbovePaddle();
                     drawMessage("JAKANOID");
                     drawMessageAuthor();
+                }
+                else{
+                    drawLives();
+                    drawScore();
                 }
 
                 if(isGameOnStandBy()){
@@ -551,9 +555,11 @@
             window.onload = function(){
                 LEVEL = getRandomInt(1,MAX_LEVEL);
                 
-                resetAllBricks(triggerMainLoop);
-            }
+                resetAllBricks();
 
+                triggerMainLoop();
+            }
+            
             function triggerMainLoop(){
                 setInterval(mainLoop, 1);
             }
