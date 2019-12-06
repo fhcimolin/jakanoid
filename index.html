@@ -50,6 +50,8 @@
             var paddleX = canvas.width / 2;
             var paddleY = canvas.height - 60;
 
+            var bonusWallTouch = 0;
+
             var LEVEL = 1;
 
             var BRICK_MODEL = [
@@ -220,12 +222,14 @@
                     var angleRatio = (ballX - (paddleX - (paddleWidth / 2))) / paddleWidth;
 
                     ballAngle = 165 - (140 * angleRatio);
+                    bonusWallTouch = 0;
                 }
             }
 
             function loseLife(){
                 if(isGameRunning()){
                     ballY = canvas.height + 10; //hide ball from view
+                    bonusWallTouch = 0;
                     lives--;
 
                     if(lives > 0){
@@ -254,6 +258,7 @@
                 }
     
                 ballAngle %= 360;
+                bonusWallTouch++;
             }
 
             function checkBallColisionAngleWithBrick(x,y){
@@ -291,7 +296,7 @@
                 if(brickArray[ballQuadrantY][ballQuadrantX] > 0){
                     brickArray[ballQuadrantY][ballQuadrantX] = 0;
 
-                    score += POINTS_PER_BRICK;
+                    score += POINTS_PER_BRICK + bonusWallTouch;
 
                     checkBallColisionAngleWithBrick(
                         ballQuadrantX, 
@@ -317,7 +322,7 @@
                 var livesText = "";
                 
                 for(var i = 0; i < lives; i++){
-                    livesText += String.fromCharCode(10134); //heavy minus sign (paddle)
+                    livesText += String.fromCharCode(10134);
                 }
                 
                 context.fillStyle = "rgba(100,100,100,1)";
@@ -450,10 +455,6 @@
                 }
             }
 
-            canvas.onmousemove = function(event){
-                paddleX = event.x;
-            }
-
             canvas.onmousedown = function(event){
                 handleGameFlow();
             }
@@ -462,6 +463,10 @@
                 handleGameFlow();
 
                 event.preventDefault();
+            }
+
+            canvas.onmousemove = function(event){
+                paddleX = event.x;
             }
 
             canvas.ontouchmove = function(event) {
