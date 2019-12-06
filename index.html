@@ -42,8 +42,6 @@
             var paddleX = canvas.width / 2;
             var paddleY = canvas.height - 60;
 
-            var bonusWallTouch = 0;
-
             var LEVEL = 1;
 
             var BRICK_MODEL = [
@@ -108,8 +106,6 @@
                 [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
                 [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
-                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
                 [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
@@ -222,14 +218,12 @@
                     var angleRatio = (ballX - (paddleX - (paddleWidth / 2))) / paddleWidth;
 
                     ballAngle = 165 - (140 * angleRatio);
-                    bonusWallTouch = 0;
                 }
             }
 
             function loseLife(){
                 if(isGameRunning()){
                     ballY = canvas.height + 10; //hide ball from view
-                    bonusWallTouch = 0;
                     lives--;
 
                     if(lives > 0){
@@ -258,7 +252,6 @@
                 }
     
                 ballAngle %= 360;
-                bonusWallTouch++;
             }
 
             function checkBallColisionAngleWithBrick(x,y){
@@ -296,7 +289,7 @@
                 if(brickArray[ballQuadrantY][ballQuadrantX] > 0){
                     brickArray[ballQuadrantY][ballQuadrantX] = 0;
 
-                    score += POINTS_PER_BRICK + bonusWallTouch;
+                    score += POINTS_PER_BRICK;
 
                     checkBallColisionAngleWithBrick(
                         ballQuadrantX, 
