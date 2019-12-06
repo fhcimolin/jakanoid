@@ -6,7 +6,7 @@
         <title>Jakanoid</title>
     </head>
     <body>
-        <canvas id="myCanvas" width="576" height="400" style="border: solid black 1px">
+        <canvas id="myCanvas" width="576" height="400" style="border: solid black 1px; padding-right: 10px;">
         </canvas>
 
         <script>
@@ -326,10 +326,17 @@
             }
 
             function drawMessage(message){
+                x = canvas.width / 2;
+                y = (canvas.height / 2) + 70;
+
+                drawMessage(message, x, y);
+            }
+
+            function drawMessage(message, x, y){
                 context.fillStyle = "rgba(100,100,100,1)";
                 context.textAlign = "center";
                 context.font = "bold 20px Arial";
-                context.fillText(message, canvas.width / 2, (canvas.height / 2) + 70);
+                context.fillText(message, x, y);
             }
 
             function drawMessageAuthor(){
@@ -398,7 +405,7 @@
                 }
 
                 if(isGameWin()){
-                    drawMessage("YOU DID IT!");
+                    drawMessage("YOU DID IT!", canvas.width / 2, canvas.height / 2);
                     ballX = canvas.width + 10; //hide ball from view again
                 }
 
@@ -443,7 +450,7 @@
                 handleGameFlow();
             }
 
-            canvas.ontouchstart = function(event) {
+            canvas.ontouchend = function(event) {
                 handleGameFlow();
 
                 event.preventDefault();
