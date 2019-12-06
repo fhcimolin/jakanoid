@@ -193,6 +193,118 @@
                 ballY -= ballSpeed * -Math.sin(angle);
             }
 
+
+            var ball = {
+                x: 0,
+                y: 0,
+                angle: 0,
+                speed: 1,
+                isOutOfBoundsX: function(){
+                    return this.x > canvas.width || 
+                           this.x < 0;    
+                },
+                isOutOfBoundsY: function(){
+                    return this.y > canvas.height ||
+                           this.y < 0;    
+                },
+                checkColision: function(){
+                    this.checkIfOutOfBounds();
+                    this.checkIfInsideBrick();
+                    this.checkIfInsidePaddle();
+                },
+                checkIfInsidePaddle: function(){
+                    var hasBallReachedPaddleVertically = this.y > paddleY && this.y < paddleY + 10;
+                    var hasBallReachedPaddleFromLeft = this.x > (paddleX - (paddleWidth / 2));
+                    var hasBallReachedPaddleFromRight = this.x < (paddleX + paddleWidth - (paddleWidth / 2));
+                    
+                    if(hasBallReachedPaddleVertically && (hasBallReachedPaddleFromLeft && hasBallReachedPaddleFromRight)){
+                        var angleRatio = (this.x - (paddleX - (paddleWidth / 2))) / paddleWidth;
+
+                        this.angle = 165 - (140 * angleRatio);
+                    }
+                },                
+                checkIfBallOutOfBounds: function(){
+                    if(this.y > canvas.height){
+                        this.loseLife();
+                        return;
+                    }
+                    if(this.ballOutOfXBounds()){
+                        this.angle = 180 - this.angle;
+                    }
+                    if(this.ballOutOfYBounds()){
+                        this.angle = 360 - this.angle;
+                    }
+                    
+                    this.angle %= 360;
+                },
+                loseLife: function(){
+                    this.y = canvas.height + 10; //hide ball from view
+                },
+                checkBallColisionAngleWithBrick: function(x,y){
+                    var collisionThreshold = 1;
+                    
+                    var ballHitBrickOnY = this.y > (y * brickHeight) + brickHeight - collisionThreshold ||
+                                          this.y < (y * brickHeight) + collisionThreshold;
+                    var ballHitBrickOnX = this.x > (x * brickWidth) + brickWidth - collisionThreshold ||
+                                          this.x < (x * brickWidth) + collisionThreshold;
+
+                    this.driftBallBackwards();
+
+                    if(ballHitBrickOnX){
+                        this.angle = (180 - this.angle) % 360;
+                        return;
+                    }
+                    
+                    if(ballHitBrickOnY){
+                        this.angle = (360 - this.angle) % 360;
+                    }
+                },
+                checkIfBallInsideBrick: function(){
+                    var ballQuadrantX = (this.x - (this.x % brickWidth)) / brickWidth;
+                    var ballQuadrantY = (this.y - (this.y % brickHeight)) / brickHeight;
+
+                    if(ballQuadrantY >= brickArray.length){
+                        return;
+                    }
+
+                    if(ballQuadrantX >= brickArray[0].length){
+                        return;
+                    }
+
+                    if(brickArray[ballQuadrantY][ballQuadrantX] > 0){
+                        brickArray[ballQuadrantY][ballQuadrantX] = 0;
+
+                        score += POINTS_PER_BRICK;
+
+                        this.checkBallColisionAngleWithBrick(
+                            ballQuadrantX, 
+                            ballQuadrantY);
+                    }
+                },
+                driftBall: function(){
+                    var angle = toRadians(ballAngle);
+                    
+                    ballX += this.speed * Math.cos(angle);
+                    ballY += this.speed * -Math.sin(angle);
+                },
+                driftBallBackwards: function(){
+                    var angle = toRadians(ballAngle);
+                    
+                    ballX -= this.speed * Math.cos(angle);
+                    ballY -= this.speed * -Math.sin(angle);
+                },
+                moveBall: function(){
+                    this.driftBall();
+                    this.checkBallColision();
+                },
+                drawBall: function(){
+                    context.strokeStyle = "rgba(0,0,0,1)";
+                    context.beginPath();
+                    context.arc(this.x, this.y, 3, 0, 2 * Math.PI);
+                    context.stroke();
+                }
+            };
+
             function ballOutOfXBounds(){
                 return ballX > canvas.width || 
                        ballX < 0;
@@ -401,7 +513,6 @@
                 clearScreen();
                 
                 drawBricks();
-                drawBall();
                 drawPaddle();
                 drawLives();
                 drawScore();
@@ -417,7 +528,10 @@
                 }
 
                 if(isGameRunning()){
-                    moveBall();
+                    balls.forEach(function(ball){
+                        ball.moveBall();
+                        ball.drawBall();
+                    })
                 }
 
                 if(isGameOver()){
@@ -462,8 +576,12 @@
                 }
             }
 
+            var balls = [Object.create(ball)];
+
             canvas.onmousedown = function(event){
                 handleGameFlow();
+
+                b.push(Object.create(ball));
             }
 
             canvas.ontouchend = function(event) {
