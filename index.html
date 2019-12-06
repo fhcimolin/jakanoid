@@ -4,14 +4,6 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=586,height=device-height initial-scale=1">
         <title>Jakanoid</title>
-
-        <style>
-            @media only screen and (max-width: 600px){
-                body{
-                    zoom: 50%;
-                }
-            }
-        </style>
     </head>
     <body>
         <canvas id="myCanvas" width="576" height="400" style="border: solid black 1px;">
@@ -21,7 +13,7 @@
             var WAITING_TIME_LOST_LIFE = 2000;
             var POINTS_PER_BRICK = 10;
             var MAX_LIVES = 3;
-            var MAX_LEVEL = 3;
+            var MAX_LEVEL = 4;
             
             var GAME_TITLE_SCREEN = 0;
             var GAME_STAND_BY = 1;
@@ -103,7 +95,26 @@
                 [0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0],
                 [0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0],
                 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0]
-            ]
+            ];
+
+            var BRICK_MODEL_MATRIX = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0]
+            ];
 
             var brickArray;
 
@@ -156,6 +167,9 @@
                     case 3:
                         level_model = BRICK_MODEL_BOWTIE;
                         break;
+                    case 4:
+                        level_model = BRICK_MODEL_MATRIX;
+                        break;
                 }
                 
                 brickArray = level_model.map(arr => arr.slice());
@@ -163,20 +177,6 @@
                 if(callback){
                     callback();
                 }
-            }
-
-            function drawBrick(x,y){
-                context.fillStyle = "rgba(100,100,100,1)";
-                context.fillRect(x,y,brickWidth,brickHeight);
-                context.strokeStyle = "rgba(255,255,255,1)";
-                context.strokeRect(x,y,brickWidth,brickHeight);
-            }
-
-            function drawBall(){
-                context.strokeStyle = "rgba(0,0,0,1)";
-                context.beginPath();
-                context.arc(ballX, ballY, 3, 0, 2 * Math.PI);
-                context.stroke();
             }
 
             function toRadians (angle) {
@@ -311,6 +311,20 @@
 
             function clearScreen(){
                 context.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            function drawBrick(x,y){
+                context.fillStyle = "rgba(100,100,100,1)";
+                context.fillRect(x,y,brickWidth,brickHeight);
+                context.strokeStyle = "rgba(255,255,255,1)";
+                context.strokeRect(x,y,brickWidth,brickHeight);
+            }
+
+            function drawBall(){
+                context.strokeStyle = "rgba(0,0,0,1)";
+                context.beginPath();
+                context.arc(ballX, ballY, 3, 0, 2 * Math.PI);
+                context.stroke();
             }
 
             function drawPaddle(){
