@@ -194,17 +194,20 @@
 
 
             var ball = {
+                STOPPED = 0,
+                RUNNING = 1,
+                OUT_OF_PLAY  = 2,
                 x: 0,
                 y: 0,
                 angle: 0,
                 speed: 1,
+                state = STOPPED,
                 isOutOfBoundsX: function(){
                     return this.x > canvas.width || 
                            this.x < 0;    
                 },
                 isOutOfBoundsY: function(){
-                    return this.y > canvas.height ||
-                           this.y < 0;    
+                    return this.y < 0;    
                 },
                 checkColision: function(){
                     this.checkIfOutOfBounds();
@@ -222,85 +225,86 @@
                         this.angle = 165 - (140 * angleRatio);
                     }
                 },                
-                checkIfBallOutOfBounds: function(){
+                checkIfOutOfBounds: function(){
                     if(this.y > canvas.height){
-                        this.loseLife();
-                        return;
+                        this.state = OUT_OF_PLAY;
                     }
-                    if(this.ballOutOfXBounds()){
+                    if(this.isOutOfBoundsX()){
                         this.angle = 180 - this.angle;
                     }
-                    if(this.ballOutOfYBounds()){
+                    if(this.isOutOfBoundsY()){
                         this.angle = 360 - this.angle;
                     }
                     
                     this.angle %= 360;
                 },
-                loseLife: function(){
-                    this.y = canvas.height + 10; //hide ball from view
-                },
-                checkBallColisionAngleWithBrick: function(x,y){
+                checkColisionAngleWithBrick: function(x,y){
                     var collisionThreshold = 1;
                     
-                    var ballHitBrickOnY = this.y > (y * brickHeight) + brickHeight - collisionThreshold ||
+                    var hitBrickOnY = this.y > (y * brickHeight) + brickHeight - collisionThreshold ||
                                           this.y < (y * brickHeight) + collisionThreshold;
-                    var ballHitBrickOnX = this.x > (x * brickWidth) + brickWidth - collisionThreshold ||
+                    var hitBrickOnX = this.x > (x * brickWidth) + brickWidth - collisionThreshold ||
                                           this.x < (x * brickWidth) + collisionThreshold;
 
-                    this.driftBallBackwards();
+                    this.driftBackwards();
 
-                    if(ballHitBrickOnX){
+                    if(hitBrickOnX){
                         this.angle = (180 - this.angle) % 360;
                         return;
                     }
                     
-                    if(ballHitBrickOnY){
+                    if(hitBrickOnY){
                         this.angle = (360 - this.angle) % 360;
                     }
                 },
-                checkIfBallInsideBrick: function(){
-                    var ballQuadrantX = (this.x - (this.x % brickWidth)) / brickWidth;
-                    var ballQuadrantY = (this.y - (this.y % brickHeight)) / brickHeight;
+                checkIfInsideBrick: function(){
+                    var quadrantX = (this.x - (this.x % brickWidth)) / brickWidth;
+                    var quadrantY = (this.y - (this.y % brickHeight)) / brickHeight;
 
-                    if(ballQuadrantY >= brickArray.length){
+                    if(quadrantY >= brickArray.length){
                         return;
                     }
 
-                    if(ballQuadrantX >= brickArray[0].length){
+                    if(quadrantX >= brickArray[0].length){
                         return;
                     }
 
-                    if(brickArray[ballQuadrantY][ballQuadrantX] > 0){
-                        brickArray[ballQuadrantY][ballQuadrantX] = 0;
+                    if(brickArray[quadrantY][quadrantX] > 0){
+                        brickArray[quadrantY][quadrantX] = 0;
 
                         score += POINTS_PER_BRICK;
 
-                        this.checkBallColisionAngleWithBrick(
-                            ballQuadrantX, 
-                            ballQuadrantY);
+                        this.checkColisionAngleWithBrick(
+                            quadrantX, 
+                            quadrantY);
                     }
                 },
-                driftBall: function(){
-                    var angle = toRadians(ballAngle);
+                drift: function(){
+                    var angle = toRadians(this.angle);
                     
-                    ballX += this.speed * Math.cos(angle);
-                    ballY += this.speed * -Math.sin(angle);
+                    this.x += this.speed * Math.cos(angle);
+                    this.y += this.speed * -Math.sin(angle);
                 },
-                driftBallBackwards: function(){
-                    var angle = toRadians(ballAngle);
+                driftBackwards: function(){
+                    var angle = toRadians(this.angle);
                     
-                    ballX -= this.speed * Math.cos(angle);
-                    ballY -= this.speed * -Math.sin(angle);
+                    this.x -= this.speed * Math.cos(angle);
+                    this.y -= this.speed * -Math.sin(angle);
                 },
-                moveBall: function(){
-                    this.driftBall();
-                    this.checkBallColision();
+                move: function(){
+                    this.drift();
+                    this.checkColision();
                 },
-                drawBall: function(){
+                draw: function(){
                     context.strokeStyle = "rgba(0,0,0,1)";
                     context.beginPath();
                     context.arc(this.x, this.y, 3, 0, 2 * Math.PI);
                     context.stroke();
+                },
+                placeAbovePaddle: function(){
+                    this.x = paddleX;
+                    this.y = paddleY - 20;
+                    this.angle = 80;
                 }
             };
 
@@ -518,7 +522,9 @@
                 drawPaddle();
                 
                 if(isGameOnTitleScreen()){
-                    placeBallAbovePaddle();
+                    balls.forEach(function(ball){
+                        ball.placeAbovePaddle();
+                    });
                     drawMessage("JAKANOID");
                     drawMessageAuthor();
                 }
@@ -528,13 +534,15 @@
                 }
 
                 if(isGameOnStandBy()){
-                    placeBallAbovePaddle();
+                    balls.forEach(function(ball){
+                        ball.placeAbovePaddle();
+                    });
                 }
 
                 if(isGameRunning()){
                     balls.forEach(function(ball){
-                        ball.moveBall();
-                        ball.drawBall();
+                        ball.move();
+                        ball.draw();
                     })
                 }
 
@@ -544,17 +552,23 @@
 
                 if(isGameWin()){
                     drawYouDidIt();
-                    ballX = canvas.width + 10; //hide ball from view again
                 }
 
                 if(areAllBricksWiped()){
                     gameState = GAME_WIN;
                 }
+
+                balls.forEach(function(ball){
+                    if(ball.y > canvas.height){
+                        delete ball;
+                        return;
+                    }
+                });
             }
 
             window.onload = function(){
                 LEVEL = getRandomInt(1,MAX_LEVEL);
-                
+
                 resetAllBricks();
 
                 triggerMainLoop();
@@ -587,7 +601,13 @@
             canvas.onmousedown = function(event){
                 handleGameFlow();
 
-                b.push(Object.create(ball));
+                var _ball = Object.create(ball);
+
+                _ball.x = paddleX;
+                _ball.y = paddleY - 20;
+                _ball.angle = 80;
+                
+                balls.push(_ball);
             }
 
             canvas.ontouchend = function(event) {
